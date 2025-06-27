@@ -1,7 +1,16 @@
 const express = require("express");
+const mongoose = require("mongoose");
 
+mongoose
+  .connect("mongodb://127.0.0.1:27017/wtwr_db")
+  .then(() => {
+    console.log("successful connect to database");
+  })
+  .catch(console.error());
 const app = express();
 
-app.listen(3001, () => {
-  console.log("listening to port 3001");
+const { PORT = 3001 } = process.env;
+
+app.listen(PORT, () => {
+  console.log(`listening to port ${PORT}`);
 });
