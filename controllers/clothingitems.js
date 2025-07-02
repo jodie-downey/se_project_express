@@ -7,6 +7,39 @@ const {
   INTERNAL_SERVER_ERROR_CODE,
 } = require("../utils/errors");
 
+const GetItems = (req, res) => {
+  Item.find({})
+    .then((items) => res.status(SUCCESSFUL_REQUEST_CODE).send(items))
+    .catch((err) => {
+      console.error(err);
+      return res
+        .status(INTERNAL_SERVER_ERROR_CODE)
+        .send({ message: err.message });
+    });
+};
+
+const DeleteItem = (req, res) => {
+  const { itemId } = req.params;
+  Item.findByIdAndDelete(itemId)
+    .orFail()
+    .then((item) => res.status(SUCCESSFUL_REQUEST_CODE).send({ data: item }))
+    .catch((err) => {
+      console.error(err);
+      if (err.name === "DocumentNotFoundError") {
+        return res
+          .status(REQUEST_NOT_FOUND_CODE)
+          .send({ message: err.message });
+      } else if (err.name === "CastError") {
+        return res
+          .status(BAD_REQUEST_STATUS_CODE)
+          .send({ message: err.message });
+      }
+      return res
+        .status(INTERNAL_SERVER_ERROR_CODE)
+        .send({ message: err.message });
+    });
+};
+
 const CreateItem = (req, res) => {
   console.log(req);
   console.log(req.body);
@@ -31,4 +64,4 @@ const CreateItem = (req, res) => {
     });
 };
 
-module.exports = { CreateItem };
+module.exports = { CreateItem, DeleteItem, GetItems };
