@@ -4,6 +4,10 @@ const userRouter = require("./users");
 const itemRouter = require("./clothingitems");
 
 router.use("/users", userRouter);
-router.use("/clothingitems", itemRouter);
+router.use("/items", itemRouter);
+
+router.use((req, res) => {
+  res.status(500).send({ message: "Router not found" });
+});
 
 module.exports = router;
