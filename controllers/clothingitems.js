@@ -64,4 +64,52 @@ const CreateItem = (req, res) => {
     });
 };
 
-module.exports = { CreateItem, DeleteItem, GetItems };
+const LikeItem = (req, res) =>
+  Item.findByIdAndUpdate(
+    req.params.itemId,
+    { $addToSet: { likes: req.user._id } },
+    { new: true }
+  )
+    .orFail()
+    .then((item) => res.status(SUCCESSFUL_REQUEST_CODE).send({ data: item }))
+    .catch((err) => {
+      console.error(err);
+      if (err.name === "DocumentNotFoundError") {
+        return res
+          .status(REQUEST_NOT_FOUND_CODE)
+          .send({ message: err.message });
+      } else if (err.name === "CastError") {
+        return res
+          .status(BAD_REQUEST_STATUS_CODE)
+          .send({ message: err.message });
+      }
+      return res
+        .status(INTERNAL_SERVER_ERROR_CODE)
+        .send({ message: err.message });
+    });
+
+const UnlikeItem = (req, res) =>
+  Item.findByIdAndUpdate(
+    req.params.itemId,
+    { $pull: { likes: req.user._id } },
+    { new: true }
+  )
+    .orFail()
+    .then((item) => res.status(SUCCESSFUL_REQUEST_CODE).send({ data: item }))
+    .catch((err) => {
+      console.error(err);
+      if (err.name === "DocumentNotFoundError") {
+        return res
+          .status(REQUEST_NOT_FOUND_CODE)
+          .send({ message: err.message });
+      } else if (err.name === "CastError") {
+        return res
+          .status(BAD_REQUEST_STATUS_CODE)
+          .send({ message: err.message });
+      }
+      return res
+        .status(INTERNAL_SERVER_ERROR_CODE)
+        .send({ message: err.message });
+    });
+
+module.exports = { CreateItem, DeleteItem, GetItems, LikeItem, UnlikeItem };
