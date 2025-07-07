@@ -27,12 +27,12 @@ const deleteItem = (req, res) => {
       if (err.name === "DocumentNotFoundError") {
         return res
           .status(REQUEST_NOT_FOUND_CODE)
-          .send({ message: err.message });
+          .send({ message: "An error has occurred on the server" });
       }
       if (err.name === "CastError") {
         return res
           .status(BAD_REQUEST_STATUS_CODE)
-          .send({ message: err.message });
+          .send({ message: "An error has occurred on the server" });
       }
       return res
         .status(INTERNAL_SERVER_ERROR_CODE)
@@ -52,7 +52,7 @@ const createItem = (req, res) => {
       if (err.name === "ValidationError") {
         return res
           .status(BAD_REQUEST_STATUS_CODE)
-          .send({ message: err.message });
+          .send({ message: "An error has occurred on the server" });
       }
       return res
         .status(INTERNAL_SERVER_ERROR_CODE)
@@ -73,12 +73,12 @@ const likeItem = (req, res) =>
       if (err.name === "DocumentNotFoundError") {
         return res
           .status(REQUEST_NOT_FOUND_CODE)
-          .send({ message: err.message });
+          .send({ message: "An error has occurred on the server" });
       }
       if (err.name === "CastError") {
         return res
           .status(BAD_REQUEST_STATUS_CODE)
-          .send({ message: err.message });
+          .send({ message: "An error has occurred on the server" });
       }
       return res
         .status(INTERNAL_SERVER_ERROR_CODE)
@@ -98,12 +98,12 @@ const unlikeItem = (req, res) =>
       if (err.name === "DocumentNotFoundError") {
         return res
           .status(REQUEST_NOT_FOUND_CODE)
-          .send({ message: err.message });
+          .send({ message: "An error has occurred on the server" });
       }
       if (err.name === "CastError") {
         return res
           .status(BAD_REQUEST_STATUS_CODE)
-          .send({ message: err.message });
+          .send({ message: "An error has occurred on the server" });
       }
       return res
         .status(INTERNAL_SERVER_ERROR_CODE)
