@@ -1,0 +1,3 @@
+const JWT_SECRET = "KJDNFG802384BFG68SD6A90A8FGT6S";
+
+module.exports = { JWT_SECRET };
