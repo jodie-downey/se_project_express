@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const mainRouter = require("./routes/index");
 
 const { createUser, login } = require("./controllers/users");
+const auth = require("./middlewares/auth");
 
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db")
@@ -13,15 +14,10 @@ mongoose
 
 const app = express();
 
-app.use((req, res, next) => {
-  req.user = {
-    _id: "6863c083334cbd70ff9961cf",
-  };
-  next();
-});
 app.use(express.json());
 app.post("/signin", login);
 app.post("/signup", createUser);
+app.use(auth);
 app.use("/", mainRouter);
 
 const { PORT = 3001 } = process.env;
