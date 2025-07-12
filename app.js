@@ -2,6 +2,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 const mainRouter = require("./routes/index");
 
+const { createUser, login } = require("./controllers/users");
+
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db")
   .then(() => {
@@ -18,6 +20,8 @@ app.use((req, res, next) => {
   next();
 });
 app.use(express.json());
+app.post("/signin", login);
+app.post("/signup", createUser);
 app.use("/", mainRouter);
 
 const { PORT = 3001 } = process.env;

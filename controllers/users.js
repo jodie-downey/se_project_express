@@ -64,31 +64,32 @@ const getUser = (req, res) => {
     });
 };
 
-module.exports.login = (req, res) => {
+const login = (req, res) => {
   const { email, password } = req.body;
 
-  User.findOne({ email })
+  User.findUserByCredentials({ email, password })
     .then((user) => {
       if (!user) {
-        return Promise.reject(new Error("Incorrect password or email"));
+        return res
+          .status(UNAUTHORIZED_STATUS_CODE)
+          .send({ message: "Invalid email or password" });
       }
-      return bcrypt.compare(password, user.password);
-    })
-    .then((matched) => {
+      if (!user._id || !JWT_SECRET) {
+        return res
+          .status(INTERNAL_SERVER_ERROR_CODE)
+          .send({ message: "Internal Service Error" });
+      }
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
-      if (!matched) {
-        return Promise.reject(new Error("Incorrect password or email"));
-      }
-      return res.send({ token });
+      res.status(SUCCESSFUL_REQUEST_CODE).send({ token });
     })
     .catch((err) => {
       console.error(err);
       res
-        .status(UNAUTHORIZED_STATUS_CODE)
-        .send({ message: "An error has occured on the server" });
+        .status(INTERNAL_SERVER_ERROR_CODE)
+        .send({ message: "Internal Service Error" });
     });
 };
 
-module.exports = { getUsers, createUser, getUser };
+module.exports = { getUsers, createUser, getUser, login };
