@@ -26,8 +26,21 @@ const getUsers = (req, res) => {
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
 
-  User.create({ name, avatar, email, password })
-    .then((user) => res.status(SUCCESSFULL_POST_CODE).send(user))
+  bcrypt
+    .hash(password, 10)
+    .then((hash) =>
+      User.create({
+        email,
+        password: hash,
+        name,
+        avatar,
+      })
+    )
+    .then((user) => {
+      const userObjectWithoutPassword = user.toObject();
+      delete userObjectWithoutPassword.password;
+      res.status(SUCCESSFULL_POST_CODE).send(userObjectWithoutPassword);
+    })
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
@@ -45,6 +58,38 @@ const getCurrentUser = (req, res) => {
   const userId = req.user._id;
   User.findById(userId)
     .orFail()
+    .then((user) => {
+      const userObjectWithoutPassword = user.toObject();
+      delete userObjectWithoutPassword.password;
+      res.status(SUCCESSFUL_REQUEST_CODE).send(userObjectWithoutPassword);
+    })
+    .catch((err) => {
+      console.error(err);
+      if (err.name === "DocumentNotFoundError") {
+        return res
+          .status(REQUEST_NOT_FOUND_CODE)
+          .send({ message: "An error has occurred on the server" });
+      }
+      if (err.name === "CastError") {
+        return res
+          .status(BAD_REQUEST_STATUS_CODE)
+          .send({ message: "An error has occurred on the server" });
+      }
+      return res
+        .status(INTERNAL_SERVER_ERROR_CODE)
+        .send({ message: "An error has occurred on the server" });
+    });
+};
+
+const updateCurrentUser = (req, res) => {
+  const { name, avatar } = req.body;
+  const userId = req.user._id;
+
+  User.findByIdAndUpdate(
+    userId,
+    { name, avatar },
+    { runValidators: true, new: true }
+  )
     .then((user) => res.status(SUCCESSFUL_REQUEST_CODE).send(user))
     .catch((err) => {
       console.error(err);
@@ -92,4 +137,10 @@ const login = (req, res) => {
     });
 };
 
-module.exports = { getUsers, createUser, getCurrentUser, login };
+module.exports = {
+  getUsers,
+  createUser,
+  getCurrentUser,
+  login,
+  updateCurrentUser,
+};
