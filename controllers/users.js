@@ -10,6 +10,7 @@ const {
   REQUEST_NOT_FOUND_CODE,
   INTERNAL_SERVER_ERROR_CODE,
   UNAUTHORIZED_STATUS_CODE,
+  CONFLICT_ERROR,
 } = require("../utils/errors");
 
 const getUsers = (req, res) => {
@@ -48,6 +49,10 @@ const createUser = (req, res) => {
           .status(BAD_REQUEST_STATUS_CODE)
           .send({ message: "An error has occurred on the server" });
       }
+      if (err.code === 11000)
+        return res
+          .status(CONFLICT_ERROR)
+          .send({ message: "A conflict has occured" });
       return res
         .status(INTERNAL_SERVER_ERROR_CODE)
         .send({ message: "An error has occurred on the server" });
@@ -111,7 +116,7 @@ const updateCurrentUser = (req, res) => {
 
 const login = (req, res) => {
   const { email, password } = req.body;
-
+  console.log(req.body);
   User.findUserByCredentials(email, password)
     .then((user) => {
       if (!user) {
@@ -121,8 +126,8 @@ const login = (req, res) => {
       }
       if (!user._id || !JWT_SECRET) {
         return res
-          .status(INTERNAL_SERVER_ERROR_CODE)
-          .send({ message: "Internal Service Error" });
+          .status(UNAUTHORIZED_STATUS_CODE)
+          .send({ message: "Invalid email or password" });
       }
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
@@ -132,7 +137,7 @@ const login = (req, res) => {
     .catch((err) => {
       console.error(err);
       res
-        .status(INTERNAL_SERVER_ERROR_CODE)
+        .status(BAD_REQUEST_STATUS_CODE)
         .send({ message: "Internal Service Error" });
     });
 };

@@ -4,6 +4,7 @@ const {
   BAD_REQUEST_STATUS_CODE,
   REQUEST_NOT_FOUND_CODE,
   INTERNAL_SERVER_ERROR_CODE,
+  FORBIDDEN_STATUS_CODE,
 } = require("../utils/errors");
 
 const getItems = (req, res) => {
@@ -19,8 +20,14 @@ const getItems = (req, res) => {
 
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
+  const { owner } = req.user._id;
+
   Item.findByIdAndDelete(itemId)
     .orFail()
+    .then((item) => {
+      !item.owner.equals(req.user._id);
+      res.status(FORBIDDEN_STATUS_CODE).send({ message: "Not Authorized" });
+    })
     .then((item) => res.status(SUCCESSFUL_REQUEST_CODE).send({ data: item }))
     .catch((err) => {
       console.error(err);

@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const mainRouter = require("./routes/index");
+const cors = require("cors");
 
 const { createUser, login } = require("./controllers/users");
 const auth = require("./middlewares/auth");
@@ -15,6 +16,7 @@ mongoose
 const app = express();
 
 app.use(express.json());
+app.use(cors());
 app.post("/signin", login);
 app.post("/signup", createUser);
 app.use(auth);
