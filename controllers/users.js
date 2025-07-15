@@ -1,7 +1,7 @@
-const User = require("../models/users");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
+const User = require("../models/users");
 const { JWT_SECRET } = require("../utils/config");
 const {
   SUCCESSFUL_REQUEST_CODE,
@@ -132,7 +132,7 @@ const login = (req, res) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
-      res.status(SUCCESSFUL_REQUEST_CODE).send({ token });
+      return res.status(SUCCESSFUL_REQUEST_CODE).send({ token });
     })
     .catch((err) => {
       console.error(err);

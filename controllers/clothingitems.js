@@ -5,7 +5,6 @@ const {
   REQUEST_NOT_FOUND_CODE,
   INTERNAL_SERVER_ERROR_CODE,
   FORBIDDEN_STATUS_CODE,
-  UNAUTHORIZED_STATUS_CODE,
 } = require("../utils/errors");
 
 const getItems = (req, res) => {
