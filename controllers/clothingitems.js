@@ -5,6 +5,7 @@ const {
   REQUEST_NOT_FOUND_CODE,
   INTERNAL_SERVER_ERROR_CODE,
   FORBIDDEN_STATUS_CODE,
+  UNAUTHORIZED_STATUS_CODE,
 } = require("../utils/errors");
 
 const getItems = (req, res) => {
@@ -18,17 +19,34 @@ const getItems = (req, res) => {
     });
 };
 
+// .orFail()
+//     .then((item) => {
+//      if (!item.owner.equals(req.user._id))
+//       res.status(FORBIDDEN_STATUS_CODE).send({ message: "Not Authorized" });
+//     }).Item.findByIdandDelete(itemId)
+//     .then((item) => res.status(SUCCESSFUL_REQUEST_CODE).send({ data: item }))
+
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
-  const { owner } = req.user._id;
+  const owner = req.user._id;
 
-  Item.findByIdAndDelete(itemId)
-    .orFail()
+  Item.findById(itemId)
     .then((item) => {
-      !item.owner.equals(req.user._id);
-      res.status(FORBIDDEN_STATUS_CODE).send({ message: "Not Authorized" });
+      if (!item) {
+        return res
+          .status(REQUEST_NOT_FOUND_CODE)
+          .send({ message: "An error has occured on the server" });
+      }
+      if (item.owner.toString() !== owner.toString()) {
+        return res
+          .status(FORBIDDEN_STATUS_CODE)
+          .send({ message: "You are not authorized to delete this item" });
+      }
+      return Item.findByIdAndDelete(itemId);
     })
-    .then((item) => res.status(SUCCESSFUL_REQUEST_CODE).send({ data: item }))
+    .then((deletedItem) =>
+      res.status(SUCCESSFUL_REQUEST_CODE).send(deletedItem)
+    )
     .catch((err) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
