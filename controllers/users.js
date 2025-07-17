@@ -116,7 +116,11 @@ const updateCurrentUser = (req, res) => {
 
 const login = (req, res) => {
   const { email, password } = req.body;
-  console.log(req.body);
+  if (!email || !password) {
+    return res
+      .status(BAD_REQUEST_STATUS_CODE)
+      .send({ message: "Email and password are required" });
+  }
   User.findUserByCredentials(email, password)
     .then((user) => {
       if (!user) {
@@ -135,9 +139,14 @@ const login = (req, res) => {
       return res.status(SUCCESSFUL_REQUEST_CODE).send({ token });
     })
     .catch((err) => {
+      if (err.message === "Incorrect email or password") {
+        return res
+          .status(UNAUTHORIZED_STATUS_CODE)
+          .json({ message: err.message });
+      }
       console.error(err);
       res
-        .status(BAD_REQUEST_STATUS_CODE)
+        .status(INTERNAL_SERVER_ERROR_CODE)
         .send({ message: "Internal Service Error" });
     });
 };

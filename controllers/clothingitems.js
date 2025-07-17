@@ -1,4 +1,4 @@
-const Item = require("../models/clothingitem");
+const Item = require("../models/clothingItem");
 const {
   SUCCESSFUL_REQUEST_CODE,
   BAD_REQUEST_STATUS_CODE,
@@ -18,13 +18,6 @@ const getItems = (req, res) => {
     });
 };
 
-// .orFail()
-//     .then((item) => {
-//      if (!item.owner.equals(req.user._id))
-//       res.status(FORBIDDEN_STATUS_CODE).send({ message: "Not Authorized" });
-//     }).Item.findByIdandDelete(itemId)
-//     .then((item) => res.status(SUCCESSFUL_REQUEST_CODE).send({ data: item }))
-
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
   const owner = req.user._id;
@@ -41,11 +34,10 @@ const deleteItem = (req, res) => {
           .status(FORBIDDEN_STATUS_CODE)
           .send({ message: "You are not authorized to delete this item" });
       }
-      return Item.findByIdAndDelete(itemId);
+      return Item.findByIdAndDelete(itemId).then((deletedItem) => {
+        return res.status(SUCCESSFUL_REQUEST_CODE).send(deletedItem);
+      });
     })
-    .then((deletedItem) =>
-      res.status(SUCCESSFUL_REQUEST_CODE).send(deletedItem)
-    )
     .catch((err) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
