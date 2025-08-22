@@ -9,6 +9,7 @@ const {
 
 const getItems = (req, res) => {
   Item.find({})
+    .populate("owner")
     .then((items) => res.status(SUCCESSFUL_REQUEST_CODE).send(items))
     .catch((err) => {
       console.error(err);
@@ -59,7 +60,7 @@ const deleteItem = (req, res) => {
 const createItem = (req, res) => {
   const { name, imageUrl, weather } = req.body;
 
-  Item.create({ name, imageUrl, weather, owner: req.user })
+  Item.create({ name, imageUrl, weather, owner: req.user._id })
     .then((item) => {
       res.send({ data: item });
     })
