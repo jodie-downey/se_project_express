@@ -90,12 +90,20 @@ const updateCurrentUser = (req, res) => {
   const { name, avatar } = req.body;
   const userId = req.user._id;
 
-  User.findByIdAndUpdate(
-    userId,
-    { name, avatar },
-    { runValidators: true, new: true }
-  )
-    .then((user) => res.status(SUCCESSFUL_REQUEST_CODE).send(user))
+  User.findById(userId)
+    .then((user) => {
+      if (item.owner.toString() !== owner.toString()) {
+        return res
+          .status(FORBIDDEN_STATUS_CODE)
+          .send({ message: "You are not authorized to delete this item" });
+      }
+
+      return User.findByIdAndUpdate(
+        userId,
+        { name, avatar },
+        { runValidators: true, new: true }
+      ).then((user) => res.status(SUCCESSFUL_REQUEST_CODE).send(user));
+    })
     .catch((err) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
