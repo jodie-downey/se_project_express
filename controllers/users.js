@@ -89,20 +89,16 @@ const getCurrentUser = (req, res) => {
 const updateCurrentUser = (req, res) => {
   const { name, avatar } = req.body;
   const userId = req.user._id;
-
-  User.findById(userId)
+  User.findByIdAndUpdate(
+    userId,
+    { name, avatar },
+    { runValidators: true, new: true }
+  )
+    .orFail()
     .then((user) => {
-      if (item.owner.toString() !== owner.toString()) {
-        return res
-          .status(FORBIDDEN_STATUS_CODE)
-          .send({ message: "You are not authorized to delete this item" });
-      }
-
-      return User.findByIdAndUpdate(
-        userId,
-        { name, avatar },
-        { runValidators: true, new: true }
-      ).then((user) => res.status(SUCCESSFUL_REQUEST_CODE).send(user));
+      const userObjectWithoutPassword = user.toObject();
+      delete userObjectWithoutPassword.password;
+      res.status(SUCCESSFUL_REQUEST_CODE).send(userObjectWithoutPassword);
     })
     .catch((err) => {
       console.error(err);
