@@ -62,7 +62,7 @@ const createItem = (req, res) => {
 
   Item.create({ name, imageUrl, weather, owner: req.user._id })
     .then((item) => {
-      res.send({ data: item });
+      res.send(item);
     })
     .catch((err) => {
       console.error(err);
@@ -84,7 +84,7 @@ const likeItem = (req, res) =>
     { new: true }
   )
     .orFail()
-    .then((item) => res.status(SUCCESSFUL_REQUEST_CODE).send({ data: item }))
+    .then((item) => res.status(SUCCESSFUL_REQUEST_CODE).send(item))
     .catch((err) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
@@ -109,7 +109,7 @@ const unlikeItem = (req, res) =>
     { new: true }
   )
     .orFail()
-    .then((item) => res.status(SUCCESSFUL_REQUEST_CODE).send({ data: item }))
+    .then((item) => res.status(SUCCESSFUL_REQUEST_CODE).send(item))
     .catch((err) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
