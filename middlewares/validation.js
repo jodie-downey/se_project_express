@@ -73,5 +73,3 @@ module.exports.validateId = celebrate({
     itemId: Joi.string().alphanum().length(24),
   }),
 });
-
-module.exports.validate;
