@@ -1,83 +1,46 @@
 const Item = require("../models/clothingItem");
-const {
-  SUCCESSFUL_REQUEST_CODE,
-  BAD_REQUEST_STATUS_CODE,
-  REQUEST_NOT_FOUND_CODE,
-  INTERNAL_SERVER_ERROR_CODE,
-  FORBIDDEN_STATUS_CODE,
-} = require("../utils/errors");
+const { SUCCESSFUL_REQUEST_CODE } = require("../utils/errors");
 
-const getItems = (req, res) => {
+const ForbiddenError = require("../errors/ForbiddenError");
+const NotFoundError = require("../errors/NotFoundError");
+
+const getItems = (req, res, next) => {
   Item.find({})
     .populate("owner")
     .then((items) => res.status(SUCCESSFUL_REQUEST_CODE).send(items))
-    .catch((err) => {
-      console.error(err);
-      return res
-        .status(INTERNAL_SERVER_ERROR_CODE)
-        .send({ message: "An error has occurred on the server" });
-    });
+    .catch(next);
 };
 
-const deleteItem = (req, res) => {
+const deleteItem = (req, res, next) => {
   const { itemId } = req.params;
   const owner = req.user._id;
 
   Item.findById(itemId)
     .then((item) => {
       if (!item) {
-        return res
-          .status(REQUEST_NOT_FOUND_CODE)
-          .send({ message: "An error has occured on the server" });
+        throw new NotFoundError("No item with matching ID found");
       }
       if (item.owner.toString() !== owner.toString()) {
-        return res
-          .status(FORBIDDEN_STATUS_CODE)
-          .send({ message: "You are not authorized to delete this item" });
+        throw new ForbiddenError("You are not authorized to delete this item");
       }
       return Item.findByIdAndDelete(itemId).then((deletedItem) => {
         return res.status(SUCCESSFUL_REQUEST_CODE).send(deletedItem);
       });
     })
-    .catch((err) => {
-      console.error(err);
-      if (err.name === "DocumentNotFoundError") {
-        return res
-          .status(REQUEST_NOT_FOUND_CODE)
-          .send({ message: "An error has occurred on the server" });
-      }
-      if (err.name === "CastError") {
-        return res
-          .status(BAD_REQUEST_STATUS_CODE)
-          .send({ message: "An error has occurred on the server" });
-      }
-      return res
-        .status(INTERNAL_SERVER_ERROR_CODE)
-        .send({ message: "An error has occurred on the server" });
-    });
+    .catch(next);
 };
 
-const createItem = (req, res) => {
+const createItem = (req, res, next) => {
   const { name, imageUrl, weather } = req.body;
 
   Item.create({ name, imageUrl, weather, owner: req.user._id })
     .then((item) => {
       res.send(item);
     })
-    .catch((err) => {
-      console.error(err);
-      if (err.name === "ValidationError") {
-        return res
-          .status(BAD_REQUEST_STATUS_CODE)
-          .send({ message: "An error has occurred on the server" });
-      }
-      return res
-        .status(INTERNAL_SERVER_ERROR_CODE)
-        .send({ message: "An error has occurred on the server" });
-    });
+    .catch(next);
 };
 
-const likeItem = (req, res) =>
+const likeItem = (req, res, next) =>
   Item.findByIdAndUpdate(
     req.params.itemId,
     { $addToSet: { likes: req.user._id } },
@@ -85,24 +48,9 @@ const likeItem = (req, res) =>
   )
     .orFail()
     .then((item) => res.status(SUCCESSFUL_REQUEST_CODE).send(item))
-    .catch((err) => {
-      console.error(err);
-      if (err.name === "DocumentNotFoundError") {
-        return res
-          .status(REQUEST_NOT_FOUND_CODE)
-          .send({ message: "An error has occurred on the server" });
-      }
-      if (err.name === "CastError") {
-        return res
-          .status(BAD_REQUEST_STATUS_CODE)
-          .send({ message: "An error has occurred on the server" });
-      }
-      return res
-        .status(INTERNAL_SERVER_ERROR_CODE)
-        .send({ message: "An error has occurred on the server" });
-    });
+    .catch(next);
 
-const unlikeItem = (req, res) =>
+const unlikeItem = (req, res, next) =>
   Item.findByIdAndUpdate(
     req.params.itemId,
     { $pull: { likes: req.user._id } },
@@ -110,21 +58,6 @@ const unlikeItem = (req, res) =>
   )
     .orFail()
     .then((item) => res.status(SUCCESSFUL_REQUEST_CODE).send(item))
-    .catch((err) => {
-      console.error(err);
-      if (err.name === "DocumentNotFoundError") {
-        return res
-          .status(REQUEST_NOT_FOUND_CODE)
-          .send({ message: "An error has occurred on the server" });
-      }
-      if (err.name === "CastError") {
-        return res
-          .status(BAD_REQUEST_STATUS_CODE)
-          .send({ message: "An error has occurred on the server" });
-      }
-      return res
-        .status(INTERNAL_SERVER_ERROR_CODE)
-        .send({ message: "An error has occurred on the server" });
-    });
+    .catch(next);
 
 module.exports = { createItem, deleteItem, getItems, likeItem, unlikeItem };

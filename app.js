@@ -1,11 +1,20 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const { errors } = require("celebrate");
 
 const mainRouter = require("./routes/index");
 
-const { createUser, login, updateCurrentUser } = require("./controllers/users");
-const auth = require("./middlewares/auth");
+const errorHandler = require("./middlewares/errors");
+
+const {
+  validateRegistrationUserBody,
+  validateLoginUserBody,
+} = require("./middlewares/validation");
+
+const { createUser, login } = require("./controllers/users");
+
+const { requestLogger, errorLogger } = require("./middlewares/logger");
 
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db")
@@ -17,11 +26,16 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-app.post("/signin", login);
-app.post("/signup", createUser);
+app.use(requestLogger);
+
+app.post("/signin", validateLoginUserBody, login);
+app.post("/signup", validateRegistrationUserBody, createUser);
 app.use("/", mainRouter);
-app.use(auth);
-app.use("/me", updateCurrentUser);
+
+app.use(errorLogger);
+app.use(errors());
+
+app.use(errorHandler);
 
 console.log("listening port 3001");
 const { PORT = 3001 } = process.env;
