@@ -3,11 +3,14 @@ const { SUCCESSFUL_REQUEST_CODE } = require("../utils/errors");
 
 const ForbiddenError = require("../errors/ForbiddenError");
 const NotFoundError = require("../errors/NotFoundError");
+const BadRequestError = require("../errors/BadRequestError");
+const ConflictError = require("../errors/ConflictError");
+const UnauthorizedError = require("../errors/UnauthorizedError");
 
 const getItems = (req, res, next) => {
   Item.find({})
     .populate("owner")
-    .then((items) => res.status(SUCCESSFUL_REQUEST_CODE).send(items))
+    .then((items) => res.send(items))
     .catch(next);
 };
 
@@ -24,7 +27,7 @@ const deleteItem = (req, res, next) => {
         throw new ForbiddenError("You are not authorized to delete this item");
       }
       return Item.findByIdAndDelete(itemId).then((deletedItem) => {
-        return res.status(SUCCESSFUL_REQUEST_CODE).send(deletedItem);
+        return res.send(deletedItem);
       });
     })
     .catch(next);
@@ -46,9 +49,19 @@ const likeItem = (req, res, next) =>
     { $addToSet: { likes: req.user._id } },
     { new: true }
   )
-    .orFail()
-    .then((item) => res.status(SUCCESSFUL_REQUEST_CODE).send(item))
-    .catch(next);
+    .then((item) => {
+      if (!item) {
+        throw new NotFoundError("No item with matching ID found");
+      }
+      res.send(item);
+    })
+    .catch((err) => {
+      if (err.name === "CastError") {
+        throw new BadRequestError("The id string is in an invalid format");
+      } else {
+        next(err);
+      }
+    });
 
 const unlikeItem = (req, res, next) =>
   Item.findByIdAndUpdate(
@@ -56,8 +69,18 @@ const unlikeItem = (req, res, next) =>
     { $pull: { likes: req.user._id } },
     { new: true }
   )
-    .orFail()
-    .then((item) => res.status(SUCCESSFUL_REQUEST_CODE).send(item))
-    .catch(next);
+    .then((item) => {
+      if (!item) {
+        throw new NotFoundError("No item with matching ID found");
+      }
+      res.send(item);
+    })
+    .catch((err) => {
+      if (err.name === "CastError") {
+        throw new BadRequestError("The id string is in an invalid format");
+      } else {
+        next(err);
+      }
+    });
 
 module.exports = { createItem, deleteItem, getItems, likeItem, unlikeItem };

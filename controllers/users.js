@@ -13,7 +13,7 @@ const UnauthorizedError = require("../errors/UnauthorizedError");
 
 const getUsers = (req, res, next) => {
   User.find({})
-    .then((users) => res.status(SUCCESSFUL_REQUEST_CODE).send(users))
+    .then((users) => res.send(users))
     .catch(next);
 };
 
@@ -33,7 +33,7 @@ const createUser = (req, res, next) => {
     .then((user) => {
       const userObjectWithoutPassword = user.toObject();
       delete userObjectWithoutPassword.password;
-      res.status(SUCCESSFULL_POST_CODE).send(userObjectWithoutPassword);
+      res.send(userObjectWithoutPassword);
     })
     .catch(next);
 };
@@ -45,7 +45,7 @@ const getCurrentUser = (req, res, next) => {
     .then((user) => {
       const userObjectWithoutPassword = user.toObject();
       delete userObjectWithoutPassword.password;
-      res.status(SUCCESSFUL_REQUEST_CODE).send(userObjectWithoutPassword);
+      res.send(userObjectWithoutPassword);
     })
     .catch(next);
 };
@@ -62,7 +62,7 @@ const updateCurrentUser = (req, res, next) => {
     .then((user) => {
       const userObjectWithoutPassword = user.toObject();
       delete userObjectWithoutPassword.password;
-      res.status(SUCCESSFUL_REQUEST_CODE).send(userObjectWithoutPassword);
+      res.send(userObjectWithoutPassword);
     })
     .catch(next);
 };
@@ -85,13 +85,7 @@ const login = (req, res, next) => {
       });
       return res.status(SUCCESSFUL_REQUEST_CODE).send({ token });
     })
-    .catch((err) => {
-      if (err.message === "Incorrect email or password") {
-        next(new UnauthorizedError("Incorrect email or password"));
-      } else {
-        next(err);
-      }
-    });
+    .catch(next);
 };
 
 module.exports = {

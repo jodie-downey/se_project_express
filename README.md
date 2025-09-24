@@ -12,6 +12,15 @@ This backend project focuses on:
 
 ---
 
+## Deployed Domain
+
+[domain](https://wtwr.flowtemp.ro/)
+[domain](https://www.wtwr.flowtemp.ro/)
+
+## FrontEnd Repository
+
+[repository](https://github.com/jodie-downey/se_project_react)
+
 ## 🧰 Technologies Used
 
 - **Node.js & Express.js** – Core server framework
