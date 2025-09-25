@@ -35,9 +35,6 @@ module.exports.validateLoginUserBody = celebrate({
     email: Joi.string().required(),
     password: Joi.string().required(),
   }),
-  params: Joi.object().keys({
-    itemId: Joi.string().hex().length(24),
-  }),
 });
 
 module.exports.validateUpdateUserBody = celebrate({

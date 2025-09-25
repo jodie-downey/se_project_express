@@ -3,19 +3,12 @@ const jwt = require("jsonwebtoken");
 
 const User = require("../models/users");
 const { JWT_SECRET } = require("../utils/config");
-const {
-  SUCCESSFUL_REQUEST_CODE,
-  SUCCESSFULL_POST_CODE,
-} = require("../utils/errors");
+const { SUCCESSFUL_REQUEST_CODE } = require("../utils/errors");
 
 const BadRequestError = require("../errors/BadRequestError");
 const UnauthorizedError = require("../errors/UnauthorizedError");
-
-const getUsers = (req, res, next) => {
-  User.find({})
-    .then((users) => res.send(users))
-    .catch(next);
-};
+const ConflictError = require("../errors/ConflictError");
+const NotFoundError = require("../errors/NotFoundError");
 
 const createUser = (req, res, next) => {
   const { name, avatar, email, password } = req.body;
@@ -35,13 +28,21 @@ const createUser = (req, res, next) => {
       delete userObjectWithoutPassword.password;
       res.send(userObjectWithoutPassword);
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.code === 11000) {
+        next(new ConflictError("Email already exists"));
+      } else if (err.name === "ValidationError") {
+        next(new BadRequestError("invalid data"));
+      } else {
+        next(err);
+      }
+    });
 };
 
 const getCurrentUser = (req, res, next) => {
   const userId = req.user._id;
   User.findById(userId)
-    .orFail()
+    .orFail(() => new NotFoundError("No user found with matching ID"))
     .then((user) => {
       const userObjectWithoutPassword = user.toObject();
       delete userObjectWithoutPassword.password;
@@ -58,13 +59,19 @@ const updateCurrentUser = (req, res, next) => {
     { name, avatar },
     { runValidators: true, new: true }
   )
-    .orFail()
+    .orFail(() => new NotFoundError("No user found with matching ID"))
     .then((user) => {
       const userObjectWithoutPassword = user.toObject();
       delete userObjectWithoutPassword.password;
       res.send(userObjectWithoutPassword);
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === "ValidationError") {
+        next(new BadRequestError("invalid data"));
+      } else {
+        next(err);
+      }
+    });
 };
 
 const login = (req, res, next) => {
@@ -89,7 +96,6 @@ const login = (req, res, next) => {
 };
 
 module.exports = {
-  getUsers,
   createUser,
   getCurrentUser,
   login,
